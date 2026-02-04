@@ -22,7 +22,9 @@ CREATE TABLE `user` (
     `update_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `last_login_time` TIMESTAMP DEFAULT NULL COMMENT '最后登录时间',
     `is_deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除: 0-未删除 1-已删除',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    KEY `idx_username` (`username`),
+    KEY `idx_status_deleted` (`status`, `is_deleted`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
 
 -- =============================================
@@ -39,7 +41,8 @@ CREATE TABLE `role` (
     `create_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `is_deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除: 0-未删除 1-已删除',
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`id`),
+    KEY `idx_code` (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色表';
 
 -- =============================================
@@ -74,7 +77,9 @@ CREATE TABLE `user_role` (
     `user_id` BIGINT NOT NULL COMMENT '用户 ID',
     `role_id` BIGINT NOT NULL COMMENT '角色 ID',
     PRIMARY KEY (`id`),
-    KEY `idx_role_id` (`role_id`)
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_role_id` (`role_id`),
+    KEY `idx_user_role` (`user_id`, `role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户-角色关联表';
 
 -- =============================================
@@ -86,7 +91,9 @@ CREATE TABLE `role_menu` (
     `role_id` BIGINT NOT NULL COMMENT '角色 ID',
     `menu_id` BIGINT NOT NULL COMMENT '菜单 ID',
     PRIMARY KEY (`id`),
-    KEY `idx_menu_id` (`menu_id`)
+    KEY `idx_role_id` (`role_id`),
+    KEY `idx_menu_id` (`menu_id`),
+    KEY `idx_role_menu` (`role_id`, `menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='角色-菜单关联表';
 
 -- =============================================
@@ -140,7 +147,8 @@ CREATE TABLE `article` (
     KEY `idx_category_id` (`category_id`),
     KEY `idx_author_id` (`author_id`),
     KEY `idx_status` (`status`),
-    KEY `idx_create_time` (`create_time`)
+    KEY `idx_create_time` (`create_time`),
+    KEY `idx_list_query` (`is_deleted`, `status`, `is_top` DESC, `create_time` DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章表';
 
 -- =============================================
@@ -152,5 +160,27 @@ CREATE TABLE `article_tag` (
     `article_id` BIGINT NOT NULL COMMENT '文章 ID',
     `tag_id` BIGINT NOT NULL COMMENT '标签 ID',
     PRIMARY KEY (`id`),
-    KEY `idx_tag_id` (`tag_id`)
+    KEY `idx_article_id` (`article_id`),
+    KEY `idx_tag_id` (`tag_id`),
+    KEY `idx_article_tag` (`article_id`, `tag_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章-标签关联表';
+
+-- =============================================
+-- 初始化数据
+-- =============================================
+
+-- 初始化管理员用户 (密码: admin123)
+INSERT INTO `user` (`id`, `username`, `password`, `nickname`, `status`) VALUES
+(1, 'admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '管理员', 1);
+
+-- 初始化分类
+INSERT INTO `category` (`id`, `name`, `description`, `sort`) VALUES
+(1, '技术分享', '技术相关文章', 1),
+(2, '生活随笔', '生活感悟', 2);
+
+-- 初始化标签
+INSERT INTO `tag` (`id`, `name`, `color`) VALUES
+(1, 'Java', '#f56c6c'),
+(2, 'Spring Boot', '#67c23a'),
+(3, 'Vue', '#409eff'),
+(4, '前端', '#e6a23c');

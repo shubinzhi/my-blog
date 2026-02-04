@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BizException.class)
     public R<Void> handleBizException(BizException e, HttpServletRequest request) {
-        log.warn("业务异常 [{}]: {}", request.getRequestURI(), e.getMessage());
+        log.error("业务异常 [{}]: {}", request.getRequestURI(), e.getMessage());
         return R.fail(e.getCode(), e.getMessage());
     }
 
@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
         String msg = e.getBindingResult().getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
-        log.warn("参数校验失败: {}", msg);
+        log.error("参数校验失败: {}", msg);
         return R.fail(400, msg);
     }
 
@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
         String msg = e.getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
-        log.warn("参数绑定失败: {}", msg);
+        log.error("参数绑定失败: {}", msg);
         return R.fail(400, msg);
     }
 
@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(NotLoginException.class)
     public R<Void> handleNotLoginException(NotLoginException e) {
-        log.warn("未登录访问: {}", e.getMessage());
+        log.error("未登录访问: {}", e.getMessage());
         return R.fail(401, "未登录或登录已过期");
     }
 
@@ -69,7 +69,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(NotPermissionException.class)
     public R<Void> handleNotPermissionException(NotPermissionException e) {
-        log.warn("无权限: {}", e.getMessage());
+        log.error("无权限: {}", e.getMessage());
         return R.fail(403, "无权限访问");
     }
 
